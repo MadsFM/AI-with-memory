@@ -5,7 +5,7 @@ from langchain.memory import ConversationBufferMemory, MongoDBChatMessageHistory
 from pymongo import MongoClient
 from langchain_ollama import ChatOllama
 from pydantic import BaseModel, Field
-from MongoMemory import MongoMemory
+from mongo_memory import MongoMemory
 
 router = APIRouter()
 
