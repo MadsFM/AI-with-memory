@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field
 
 router = APIRouter()
 
+#BaseModel
 class UserPrompt(BaseModel):
     prompt_tmp: str = Field(..., description="Prompt message from user")
     temperature: float = Field(default=0.8, ge=0, le=2, description="The creativity of the answer.")
