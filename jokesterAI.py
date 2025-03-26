@@ -26,12 +26,12 @@ conversation = ConversationChain(
     verbose=True)
 
 #Prompt Template
-prompt_tmp = ChatPromptTemplate.from_messages(
+prompt = ChatPromptTemplate.from_messages(
     [("user", "{prompt}")]
 )
 
 #Chain
-llm_chain = prompt_tmp | llm
+llm_chain = prompt | llm
 
 #Functions
 def answer_writer(prompt: str, temperature: float) -> str:

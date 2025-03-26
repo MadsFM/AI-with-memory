@@ -3,5 +3,4 @@ import jokesterAI
 
 app = FastAPI()
 
-
-app.include_router(jokesterAI.router, prefix="/AI", tags=["It-Expert"])
+app.include_router(jokesterAI.router, prefix="/AI", tags=["Joey"])
