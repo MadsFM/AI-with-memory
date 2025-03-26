@@ -9,6 +9,7 @@ from MongoMemory import MongoMemory
 
 router = APIRouter()
 
+#BaseModel
 class UserPrompt(BaseModel):
     prompt: str = Field(..., description="Prompt message from user")
     temperature: float = Field(default=0.8, ge=0, le=2, description="The creativity of the answer.")
@@ -47,8 +48,6 @@ for msg in previous_messages:
     memory.chat_memory.add_user_message(parts[1].replace("Bot", ""))
 
 conversation = LLMChain(llm=ChatOllama(model=model), memory=memory, prompt=prompt_temp, verbose=True)
-
-
 
 #Functions
 def answer_writer(prompt: str, temperature: float) -> str:
