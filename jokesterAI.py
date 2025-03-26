@@ -1,43 +1,60 @@
 from fastapi import APIRouter, HTTPException
-from langchain_core.prompts import ChatPromptTemplate
-from langchain.chains import ConversationChain
+from langchain_core.prompts import PromptTemplate
+from langchain.chains import LLMChain
 from langchain.memory import ConversationBufferMemory, MongoDBChatMessageHistory
 from pymongo import MongoClient
 from langchain_ollama import ChatOllama
 from pydantic import BaseModel, Field
+from MongoMemory import MongoMemory
 
 router = APIRouter()
 
 class UserPrompt(BaseModel):
-    prompt_tmp: str = Field(..., description="Prompt message from user")
+    prompt: str = Field(..., description="Prompt message from user")
     temperature: float = Field(default=0.8, ge=0, le=2, description="The creativity of the answer.")
 
 class Response(BaseModel):
     result: str = Field(..., description="The answer from the AI.")
 
+#Client
+client = MongoClient("mongodb://localhost:27017/")
+db = client["chat_memory"]
+collection = db["chat"]
+model = "gemma2:9b"
+
 #Model
 llm = ChatOllama(model="gemma2:9b", temperature=0.8)
 
-#Chat memory
-short_mem = ConversationBufferMemory()
+#Template
+template = """
+{history}
+User: {input}
+"""
 
-conversation = ConversationChain(
-    llm=llm,
-    memory=short_mem,
-    verbose=True)
+#Prompt
+prompt_temp = PromptTemplate(input_variables=["history", "input"], template=template)
 
-#Prompt Template
-prompt_tmp = ChatPromptTemplate.from_messages(
-    [("user", "{prompt}")]
-)
+#Init DB
+db_memory = MongoMemory(collection)
 
-#Chain
-llm_chain = prompt_tmp | llm
+#LangChain memory
+memory = ConversationBufferMemory()
+
+previous_messages = db_memory.load_messages()
+for msg in previous_messages:
+    parts = msg.split("\n")
+    memory.chat_memory.add_user_message(parts[0].replace("User", ""))
+    memory.chat_memory.add_user_message(parts[1].replace("Bot", ""))
+
+conversation = LLMChain(llm=ChatOllama(model=model), memory=memory, prompt=prompt_temp, verbose=True)
+
+
 
 #Functions
 def answer_writer(prompt: str, temperature: float) -> str:
     llm.temperature = temperature
     response = conversation.predict(input=prompt)
+    db_memory.save_message(prompt, response)
     return response.content if hasattr(response, "content") else str(response)
 
 #Endpoint
