@@ -1,8 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from langchain_core.prompts import ChatPromptTemplate
 from langchain.chains import ConversationChain
-from langchain.memory import ConversationBufferMemory, MongoDBChatMessageHistory
-from pymongo import MongoClient
+from langchain.memory import ConversationBufferMemory
 from langchain_ollama import ChatOllama
 from pydantic import BaseModel, Field
 
